@@ -9,6 +9,7 @@ import webhooksRouter from './routes/webhooks.js';
 
 dotenv.config();
 
+const app = express();
 app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3001;
 
@@ -18,11 +19,11 @@ app.use(helmet());
 // CORS — only your frontend can call this backend
 const allowed = [
   process.env.FRONTEND_URL || 'http://localhost:5173',
-  /\.netlify\.app$/,   // any netlify preview URL
+  'https://muha112.github.io',
 ];
 app.use(cors({
   origin: (origin, cb) => {
-    if (!origin) return cb(null, true); // curl / Postman
+    if (!origin) return cb(null, true);
     if (allowed.some(a => typeof a === 'string' ? a === origin : a.test(origin)))
       return cb(null, true);
     cb(new Error('CORS blocked'));
@@ -30,36 +31,35 @@ app.use(cors({
   credentials: true,
 }));
 
-// Rate limiting — prevents abuse & cost spikes
+// Rate limiting
 app.use('/api/', rateLimit({
   windowMs: 15 * 60 * 1000, max: 120,
   message: { error: 'Too many requests — try again soon.' },
 }));
 
-// Tighter limit on AI (it costs tokens)
 const aiLimit = rateLimit({
   windowMs: 60_000, max: 15,
   message: { error: 'Slow down — max 15 AI calls per minute.' },
 });
 
-// Webhooks need raw body BEFORE express.json
+// Webhooks need raw body
 app.use('/api/webhooks', express.raw({ type: 'application/json' }), webhooksRouter);
 
-// JSON body (max 10 kb — blocks huge payloads)
+// JSON body
 app.use(express.json({ limit: '10kb' }));
 
 // Routes
 app.use('/api/ai', aiLimit, aiRouter);
 app.use('/api/payments', paymentsRouter);
 
-// Health check — Render uses this to confirm the service is up
+// Health check
 app.get('/api/health', (_req, res) =>
   res.json({ status: 'ok', ts: new Date().toISOString() }));
 
 // 404
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
 
-// Global error handler
+// Error handler
 app.use((err, _req, res, _next) => {
   console.error('[ERROR]', err.message);
   res.status(err.status || 500).json({
