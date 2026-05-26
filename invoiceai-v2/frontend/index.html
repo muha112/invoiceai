@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="InvoiceAI — Generate professional invoices and proposals in seconds using AI. Built for freelancers.">
+<title>InvoiceAI — Smart Invoices & Proposals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<!-- Update this after you deploy backend to Render -->
+<script>window.BACKEND_URL = 'https://invoiceai-backend.onrender.com';</script>
+
+<style>
+:root {
+  --ink:#0e0e0e; --ink2:#444; --ink3:#888; --paper:#faf9f6;
+  --white:#fff; --accent:#1a6b4a; --accent2:#e8f5ef; --border:#e2e0d8;
+  --danger:#c0392b; --warn:#e67e22; --r:12px; --shadow:0 2px 16px rgba(0,0,0,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
+
+/* NAV */
+nav{background:var(--white);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100}
+.logo{font-family:'DM Serif Display',serif;font-size:22px;color:var(--accent)}
+.logo span{color:var(--ink)}
+.nav-links{display:flex;gap:6px}
+.nav-btn{padding:8px 16px;border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer;border:none;font-weight:500;transition:all .15s}
+.nav-btn.ghost{background:transparent;color:var(--ink2)}
+.nav-btn.ghost:hover{background:var(--paper)}
+.nav-btn.primary{background:var(--accent);color:#fff}
+.nav-btn.primary:hover{background:#155a3c}
+
+/* TABS */
+.tabs{display:flex;gap:2px;background:var(--border);border-radius:10px;padding:3px;width:fit-content}
+.tab{padding:8px 20px;border-radius:8px;font-size:14px;cursor:pointer;border:none;background:transparent;font-family:'DM Sans',sans-serif;color:var(--ink2);font-weight:500;transition:all .15s}
+.tab.active{background:var(--white);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+
+/* LAYOUT */
+.app{display:grid;grid-template-columns:380px 1fr;min-height:calc(100vh - 60px)}
+.panel{padding:2rem;overflow-y:auto}
+.left-panel{border-right:1px solid var(--border);background:var(--white)}
+.right-panel{background:var(--paper)}
+
+/* FORM */
+.form-section{margin-bottom:1.5rem}
+.fsl{font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--ink3);text-transform:uppercase;margin-bottom:10px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-group{margin-bottom:10px}
+.form-group label{display:block;font-size:13px;color:var(--ink2);margin-bottom:4px;font-weight:500}
+.form-group input,.form-group textarea,.form-group select{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);transition:border .15s;outline:none}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--accent);background:var(--white)}
+.form-group textarea{resize:vertical;min-height:70px}
+
+/* LINE ITEMS */
+.line-items{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
+.line-header{display:grid;grid-template-columns:1fr 70px 90px 30px;gap:8px;padding:8px 12px;background:var(--paper);font-size:11px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em}
+.line-row{display:grid;grid-template-columns:1fr 70px 90px 30px;gap:8px;padding:6px 12px;border-top:1px solid var(--border);align-items:center}
+.line-row input{border:1px solid transparent;border-radius:6px;padding:5px 8px;font-size:13px;background:transparent;font-family:'DM Sans',sans-serif;color:var(--ink);width:100%}
+.line-row input:focus{border-color:var(--accent);background:var(--white);outline:none}
+.del-btn{background:none;border:none;cursor:pointer;color:var(--ink3);font-size:18px;padding:2px;border-radius:4px}
+.del-btn:hover{color:var(--danger)}
+.add-line-btn{font-size:13px;color:var(--accent);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500}
+.add-line-btn:hover{text-decoration:underline}
+
+/* GENERATE BTN */
+.generate-btn{width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-family:'DM Serif Display',serif;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:1rem}
+.generate-btn:hover{background:#155a3c;transform:translateY(-1px);box-shadow:0 4px 16px rgba(26,107,74,.3)}
+.generate-btn:disabled{background:var(--ink3);cursor:not-allowed;transform:none;box-shadow:none}
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* PREVIEW */
+.preview-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+.preview-actions{display:flex;gap:8px}
+.action-btn{padding:8px 16px;border-radius:8px;font-size:13px;border:1px solid var(--border);background:var(--white);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;color:var(--ink2);transition:all .15s}
+.action-btn:hover{border-color:var(--accent);color:var(--accent)}
+.action-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.action-btn.primary:hover{background:#155a3c}
+
+/* DOCUMENT */
+.doc-wrap{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);padding:3rem;max-width:700px;border:1px solid var(--border)}
+.doc-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2.5rem;padding-bottom:2rem;border-bottom:2px solid var(--ink)}
+.doc-brand{font-family:'DM Serif Display',serif;font-size:28px;color:var(--accent)}
+.doc-type-badge{background:var(--ink);color:var(--white);font-size:12px;font-weight:600;letter-spacing:.1em;padding:6px 14px;border-radius:4px;text-transform:uppercase}
+.doc-meta{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:2rem}
+.doc-meta-block label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);display:block;margin-bottom:6px}
+.doc-meta-block p{font-size:14px;color:var(--ink);line-height:1.5}
+.doc-subject{font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:1rem}
+.doc-desc{font-size:14px;color:var(--ink2);line-height:1.7;margin-bottom:2rem}
+.doc-table{width:100%;border-collapse:collapse;margin-bottom:1.5rem}
+.doc-table th{text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);border-bottom:1px solid var(--border)}
+.doc-table td{padding:12px;font-size:14px;border-bottom:1px solid var(--border)}
+.doc-totals{display:flex;justify-content:flex-end;margin-bottom:2rem}
+.totals-box{width:240px}
+.total-row{display:flex;justify-content:space-between;padding:6px 0;font-size:14px;color:var(--ink2)}
+.total-row.grand{font-weight:600;color:var(--ink);font-size:16px;border-top:1px solid var(--border);margin-top:4px;padding-top:10px}
+.ai-badge{display:inline-flex;align-items:center;gap:6px;background:var(--accent2);color:var(--accent);font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;margin-bottom:1rem}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.empty-state{text-align:center;padding:4rem 2rem;color:var(--ink3)}
+.empty-state .icon{font-size:48px;margin-bottom:1rem}
+.empty-state h3{font-family:'DM Serif Display',serif;font-size:20px;color:var(--ink2);margin-bottom:.5rem}
+
+/* DASHBOARD */
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:2rem}
+.dash-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem}
+.dash-card .val{font-family:'DM Serif Display',serif;font-size:28px;color:var(--ink);margin:4px 0}
+.dash-card .lbl{font-size:12px;color:var(--ink3);font-weight:500}
+.dash-card .chg{font-size:12px;color:var(--accent);font-weight:600}
+.doc-list{display:flex;flex-direction:column;gap:8px}
+.doc-item{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;transition:all .15s}
+.doc-item:hover{border-color:var(--accent)}
+.doc-item-left{display:flex;align-items:center;gap:12px}
+.doc-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.doc-icon.inv{background:var(--accent2)}
+.doc-icon.prop{background:#eef2ff}
+.doc-item-title{font-size:14px;font-weight:500;color:var(--ink)}
+.doc-item-sub{font-size:12px;color:var(--ink3)}
+.status-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px}
+.status-badge.paid{background:var(--accent2);color:var(--accent)}
+.status-badge.pending{background:#fff8ed;color:var(--warn)}
+.doc-amount{font-size:15px;font-weight:600;color:var(--ink)}
+.upgrade-banner{background:var(--ink);color:var(--white);border-radius:var(--r);padding:1.5rem;margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:center;gap:1rem}
+.upgrade-banner h3{font-family:'DM Serif Display',serif;font-size:18px;margin-bottom:4px}
+.upgrade-banner p{font-size:13px;color:#aaa}
+.upgrade-btn-nav{background:var(--white);color:var(--ink);padding:10px 20px;border-radius:8px;border:none;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;font-size:14px;white-space:nowrap}
+
+/* BACKEND BANNER */
+.backend-warn{background:#fff8ed;border:1px solid #ffd8a8;border-radius:10px;padding:12px 14px;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;color:#854F0B}
+.backend-warn a{color:var(--accent);font-weight:600}
+
+@media print{nav,.left-panel,.preview-header,.upgrade-banner,#backend_banner{display:none!important}.app{display:block}.right-panel{padding:0;background:white}.doc-wrap{box-shadow:none;border:none}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Invoice<span>AI</span></div>
+  <div class="nav-links">
+    <button class="nav-btn ghost" onclick="showSection('dashboard')">Dashboard</button>
+    <button class="nav-btn ghost" onclick="showSection('create')">+ New</button>
+    <button class="nav-btn primary" onclick="showUpgrade()">Upgrade — $10/mo</button>
+  </div>
+</nav>
+
+<!-- DASHBOARD -->
+<div id="section-dashboard" style="display:none;padding:2rem;max-width:900px;margin:0 auto">
+  <div id="backend_banner" class="backend-warn" style="display:none">
+    ⚠️ Backend not connected. <a href="https://render.com" target="_blank">Deploy backend to Render</a> then update <code>BACKEND_URL</code> in index.html.
+  </div>
+  <h2 style="font-family:'DM Serif Display',serif;font-size:26px;margin-bottom:1.5rem">Your workspace</h2>
+  <div class="upgrade-banner">
+    <div><h3>You're on the free plan</h3><p>Upgrade to unlock unlimited documents, PDF export & client email sending.</p></div>
+    <button class="upgrade-btn-nav" onclick="showUpgrade()">Upgrade Now</button>
+  </div>
+  <div class="dash-grid">
+    <div class="dash-card"><div class="lbl">Total invoiced</div><div class="val">$4,200</div><div class="chg">↑ this month</div></div>
+    <div class="dash-card"><div class="lbl">Paid</div><div class="val">$3,100</div><div class="chg">74% collected</div></div>
+    <div class="dash-card"><div class="lbl">Pending</div><div class="val">$1,100</div><div class="chg">2 invoices</div></div>
+    <div class="dash-card"><div class="lbl">Documents</div><div class="val">7</div><div class="chg">3 proposals</div></div>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+    <h3 style="font-size:16px;font-weight:500">Recent documents</h3>
+    <button class="nav-btn primary" style="font-size:13px;padding:7px 14px" onclick="showSection('create')">+ Create new</button>
+  </div>
+  <div class="doc-list">
+    <div class="doc-item"><div class="doc-item-left"><div class="doc-icon inv">🧾</div><div><div class="doc-item-title">Website Redesign — Acme Corp</div><div class="doc-item-sub">Invoice #001 · May 20, 2026</div></div></div><div style="display:flex;align-items:center;gap:12px"><span class="status-badge paid">Paid</span><span class="doc-amount">$1,500</span></div></div>
+    <div class="doc-item"><div class="doc-item-left"><div class="doc-icon prop">📋</div><div><div class="doc-item-title">Mobile App Proposal — Kira Ltd</div><div class="doc-item-sub">Proposal · May 18, 2026</div></div></div><div style="display:flex;align-items:center;gap:12px"><span class="status-badge pending">Pending</span><span class="doc-amount">$3,200</span></div></div>
+    <div class="doc-item"><div class="doc-item-left"><div class="doc-icon inv">🧾</div><div><div class="doc-item-title">Logo Design — Bright Ideas</div><div class="doc-item-sub">Invoice #002 · May 12, 2026</div></div></div><div style="display:flex;align-items:center;gap:12px"><span class="status-badge paid">Paid</span><span class="doc-amount">$600</span></div></div>
+  </div>
+</div>
+
+<!-- CREATE -->
+<div id="section-create" class="app" style="display:none">
+  <div class="left-panel panel">
+    <div style="margin-bottom:1.5rem">
+      <div class="tabs type-tabs">
+        <button class="tab active" onclick="switchType('invoice',this)">Invoice</button>
+        <button class="tab" onclick="switchType('proposal',this)">Proposal</button>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="fsl">Your details</div>
+      <div class="form-group"><label>Your name / business</label><input id="from_name" placeholder="e.g. Ahmed Creative Studio"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Your email</label><input id="from_email" type="email" placeholder="you@email.com"></div>
+        <div class="form-group"><label>Phone</label><input id="from_phone" placeholder="+251 9..."></div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="fsl">Client details</div>
+      <div class="form-group"><label>Client name / company</label><input id="to_name" placeholder="e.g. Acme Corporation"></div>
+      <div class="form-group"><label>Client email</label><input id="to_email" type="email" placeholder="client@company.com"></div>
+    </div>
+
+    <div class="form-section">
+      <div class="fsl">Project info</div>
+      <div class="form-group"><label>Project title</label><input id="project_title" placeholder="e.g. Website Redesign Project"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Currency</label>
+          <select id="currency">
+            <option value="$">USD ($)</option>
+            <option value="€">EUR (€)</option>
+            <option value="£">GBP (£)</option>
+            <option value="ETB ">ETB</option>
+            <option value="KSh ">KES</option>
+            <option value="₦">NGN (₦)</option>
+            <option value="GH₵">GHS</option>
+          </select>
+        </div>
+        <div class="form-group"><label id="due_lbl">Due date</label><input id="due_date" type="date"></div>
+      </div>
+    </div>
+
+    <div class="form-section" id="line_items_section">
+      <div class="fsl">Line items</div>
+      <div class="line-items">
+        <div class="line-header"><span>Description</span><span>Qty</span><span>Price</span><span></span></div>
+        <div id="line_rows"></div>
+      </div>
+      <button class="add-line-btn" onclick="addLine()">+ Add item</button>
+    </div>
+
+    <div class="form-section" id="scope_section" style="display:none">
+      <div class="fsl">What you'll deliver</div>
+      <div class="form-group"><textarea id="scope_text" placeholder="e.g. Full website redesign with 5 pages, mobile responsive, SEO setup..." rows="4"></textarea></div>
+    </div>
+
+    <div class="form-section">
+      <div class="fsl">Extra notes (optional)</div>
+      <div class="form-group"><textarea id="extra_notes" placeholder="Payment terms, bank details, special instructions..." rows="3"></textarea></div>
+    </div>
+
+    <button class="generate-btn" id="gen_btn" onclick="generateDoc()">
+      <span>✦</span> Generate with AI
+    </button>
+  </div>
+
+  <div class="right-panel panel">
+    <div class="preview-header">
+      <div class="tabs preview-tabs">
+        <button class="tab active" onclick="switchPreview('preview',this)">Preview</button>
+        <button class="tab" onclick="switchPreview('email',this)">Email draft</button>
+      </div>
+      <div class="preview-actions">
+        <button class="action-btn" onclick="window.print()">🖨 Print / PDF</button>
+        <button class="action-btn primary" onclick="copyEmail()">Copy email</button>
+      </div>
+    </div>
+    <div id="preview_area">
+      <div class="empty-state"><div class="icon">✦</div><h3>Your document appears here</h3><p>Fill in the form and click Generate with AI</p></div>
+    </div>
+    <div id="email_area" style="display:none">
+      <div class="empty-state"><div class="icon">✉️</div><h3>Email draft appears here</h3><p>Generate a document first</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- UPGRADE MODAL -->
+<div id="upgrade_modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center">
+  <div style="background:var(--white);border-radius:16px;padding:2.5rem;max-width:460px;width:90%;position:relative">
+    <button onclick="document.getElementById('upgrade_modal').style.display='none'" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink3)">✕</button>
+    <div style="font-family:'DM Serif Display',serif;font-size:24px;margin-bottom:.5rem">Upgrade to Pro</div>
+    <p style="font-size:14px;color:var(--ink2);margin-bottom:1.5rem">Everything you need to run your freelance business like a pro.</p>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.5rem;font-size:14px">
+      <div>✅ &nbsp;Unlimited invoices & proposals</div>
+      <div>✅ &nbsp;PDF download & email sending</div>
+      <div>✅ &nbsp;AI writes everything for you</div>
+      <div>✅ &nbsp;Payment tracking dashboard</div>
+      <div>✅ &nbsp;Your brand logo & colors</div>
+    </div>
+
+    <div style="text-align:center;margin-bottom:1.5rem">
+      <div style="font-family:'DM Serif Display',serif;font-size:36px">$10<span style="font-size:18px;color:var(--ink2)">/month</span></div>
+      <div style="font-size:13px;color:var(--ink3)">Cancel anytime</div>
+    </div>
+
+    <div class="form-group" style="margin-bottom:1rem">
+      <label>Your email</label>
+      <input id="pay_email" type="email" placeholder="you@email.com">
+    </div>
+
+    <div class="form-group" style="margin-bottom:1.5rem">
+      <label>Your currency</label>
+      <select id="pay_currency">
+        <option value="USD">USD — International (Stripe)</option>
+        <option value="NGN">NGN — Nigeria (Paystack)</option>
+        <option value="GHS">GHS — Ghana (Paystack)</option>
+        <option value="KES">KES — Kenya (Paystack)</option>
+        <option value="ZAR">ZAR — South Africa (Paystack)</option>
+        <option value="USD">USD — Africa via Paystack</option>
+      </select>
+    </div>
+
+    <div style="display:flex;gap:10px">
+      <button onclick="payWithStripe()" style="flex:1;padding:12px;background:var(--ink);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer">
+        💳 Pay with Stripe
+      </button>
+      <button onclick="payWithPaystack()" style="flex:1;padding:12px;background:#0BA4DB;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer">
+        🌍 Pay with Paystack
+      </button>
+    </div>
+    <p style="font-size:12px;color:var(--ink3);text-align:center;margin-top:10px">Stripe = global cards · Paystack = Africa (cards, bank transfer, mobile money)</p>
+  </div>
+</div>
+
+<script type="module" src="src/app.js"></script>
+</body>
+</html>
