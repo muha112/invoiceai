@@ -20,17 +20,12 @@ app.use(helmet());
 const allowed = [
   process.env.FRONTEND_URL || 'http://localhost:5173',
   'https://muha112.github.io',
+  'http://muha112.github.io',
 ];
 app.use(cors({
-  origin: (origin, cb) => {
-    if (!origin) return cb(null, true);
-    if (allowed.some(a => typeof a === 'string' ? a === origin : a.test(origin)))
-      return cb(null, true);
-    cb(new Error('CORS blocked'));
-  },
-  credentials: true,
+  origin: '*',
+  credentials: false,
 }));
-
 // Rate limiting
 app.use('/api/', rateLimit({
   windowMs: 15 * 60 * 1000, max: 120,
