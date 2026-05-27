@@ -1,45 +1,40 @@
-// ─────────────────────────────────────────────────────────
-// API client — all calls go to your secure backend
-// The backend holds your secret keys — never the browser
-// ─────────────────────────────────────────────────────────
-
 const BASE = 'https://invoiceai-t89l.onrender.com';
 
-async function request(path, body) {
-  const res = await fetch(`${BASE}${path}`, {
+window.generateDocument = (payload) =>
+  fetch(`${BASE}/api/ai/generate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Request failed');
-  return data;
-}
+    body: JSON.stringify(payload),
+  }).then(r => r.json());
 
-// ── AI ────────────────────────────────────────────────────
-export const generateDocument = (payload) => request('/api/ai/generate', payload);
-export const generateEmail    = (payload) => request('/api/ai/email', payload);
+window.generateEmail = (payload) =>
+  fetch(`${BASE}/api/ai/email`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  }).then(r => r.json());
 
-// ── Payments ──────────────────────────────────────────────
-export async function startStripeCheckout(email) {
-  const data = await request('/api/payments/stripe/checkout', { email });
+window.startStripeCheckout = async (email) => {
+  const data = await fetch(`${BASE}/api/payments/stripe/checkout`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  }).then(r => r.json());
   if (data.url) window.location.href = data.url;
-}
+};
 
-export async function startPaystackCheckout(email, currency = 'USD') {
-  const data = await request('/api/payments/paystack/checkout', { email, currency });
+window.startPaystackCheckout = async (email, currency = 'USD') => {
+  const data = await fetch(`${BASE}/api/payments/paystack/checkout`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, currency }),
+  }).then(r => r.json());
   if (data.url) window.location.href = data.url;
-}
+};
 
-export async function verifyPaystack(reference) {
-  const res = await fetch(`${BASE}/api/payments/paystack/verify/${reference}`);
-  return res.json();
-}
-
-// ── Health ────────────────────────────────────────────────
-export async function checkBackend() {
+window.checkBackend = async () => {
   try {
-    const res = await fetch(`${BASE}/api/health`);
-    return res.ok;
+    const r = await fetch(`${BASE}/api/health`);
+    return r.ok;
   } catch { return false; }
-}
+};
