@@ -4,7 +4,7 @@
 // ─────────────────────────────────────────────────────────
 import { CONFIG } from './config.js';
 
-const BASE = CONFIG.BACKEND_URL;
+const BASE = 'https://invoiceai-t89l.onrender.com';
 
 async function request(path, body) {
   const res = await fetch(`${BASE}${path}`, {
