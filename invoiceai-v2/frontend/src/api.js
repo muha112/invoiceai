@@ -2,7 +2,6 @@
 // API client — all calls go to your secure backend
 // The backend holds your secret keys — never the browser
 // ─────────────────────────────────────────────────────────
-import { CONFIG } from './config.js';
 
 const BASE = 'https://invoiceai-t89l.onrender.com';
 
